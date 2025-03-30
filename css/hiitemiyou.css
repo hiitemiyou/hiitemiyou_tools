@@ -1,0 +1,33 @@
+#hiitemiyou .main {
+    width: 896px;
+    height: 504px;
+    display: flex;
+    border-color: black;
+    border: 1px solid;
+}
+
+#hiitemiyou .main .right-side .title {
+    width: 448px;
+    height: 84px;
+    background-image: url("../image/title.png"); 
+}
+
+#hiitemiyou .main .right-side .explain {
+    width: 448px;
+    height: 84px;
+    text-align: center;
+}
+
+#hiitemiyou .footer {
+    width: 869px;
+    display: flex;
+}
+
+#hiitemiyou .footer .counter {
+    width: 50%;
+}
+
+#hiitemiyou .footer .fps {
+    width: 50%;
+    text-align: right;
+}
