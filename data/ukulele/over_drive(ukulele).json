@@ -78,7 +78,7 @@
         {"time":106.16, "chordName":"D", "chord":["2","2","2","0"]},
         {"time":107.78, "chordName":"G", "chord":["0","2","3","2"]},
         {"time":109.41, "chordName":"D", "chord":["2","2","2","0"]},
-        {"time":111.03, "chordName":"BbM7", "chord":["3","3","2","2"]},
+        {"time":111.03, "chordName":"BbM7", "chord":["0","2","1","2"]},
         {"time":112.65, "chordName":"C", "chord":["0","0","0","3"]},
         {"time":114.27, "chordName":"Am", "chord":["2","0","0","0"]},
         {"time":115.89, "chordName":"D", "chord":["2","2","2","0"]},
