@@ -9,7 +9,10 @@
 #hiitemiyou .main .right-side .title {
     width: 448px;
     height: 84px;
-    background-image: url("../image/title.png"); 
+    background-image: url("../image/title.png");
+    background-repeat:no-repeat;
+    background-position:50%;
+    background-size:contain;  
 }
 
 #hiitemiyou .main .right-side .explain {

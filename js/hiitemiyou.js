@@ -1,3 +1,7 @@
+// DEFAULT
+var DEFAULT_WIDTH = 896;
+var DEFAULT_HEIGHT = 504;
+
 // for YouTubeAPI
 var videoWidth  = '448';  //動画横サイズ
 var videoHeight = '336';  //動画縦サイズ
@@ -153,7 +157,7 @@ function initialize(){
     topTag = document.getElementById("hiitemiyou");
     topTag.innerHTML = `
 <div class="main">
-    <canvas width="448px" height="504px"></canvas>
+    <canvas id="hiitemiyou-canvas" width="448px" height="504px"></canvas>
     <div class="right-side" width="50%" height="100%">
         <div class="title"></div>
         <div id="player" width="448px" height="504px"></div>
@@ -161,10 +165,11 @@ function initialize(){
     </div>
 </div>
 <div class="footer">
+    <input type="button" id="fullScreenOnOff" class="fullScreenOnOff" value="FullScreen On" onclick="fullScreenOnOff()">
+    <input type="file" id="hiitemiyou-file" accept="application/json"/>
     <div id="counter" class="counter"></div>
     <div id="fps" class="fps"></div>
 </div>
-<input type="file" id="hiitemiyou-file" accept="application/json"/><br>
     `;
     // ファイルロードボタンの初期設定
     initializeFileButton();
@@ -175,6 +180,88 @@ function initialize(){
     console.log("hiitemiyoau-dat=" + dataText);
     load(dataText);
 }
+
+function fullScreenOnOff() {
+    let fullScreenOnOffBtn = document.getElementById("fullScreenOnOff");
+    let promise;
+    if(fullScreenOnOffBtn.value == "FullScreen On") {
+        promise = document.documentElement.requestFullscreen();
+        promise.then(setResizeAtFullScreenOnOff, setResizeAtFullScreenOnOff);
+    } else {
+        promise = document.exitFullscreen();
+        promise.then(setResizeAtFullScreenOnOff, setResizeAtFullScreenOnOff);
+    }
+}
+
+function setResizeAtFullScreenOnOff() {
+    let fullScreenOnOffBtn = document.getElementById("fullScreenOnOff");
+    let main = document.querySelectorAll("#hiitemiyou .main")[0];
+    let title = document.querySelectorAll("#hiitemiyou .main .title")[0];
+    let explain = document.querySelectorAll("#hiitemiyou .main .explain")[0];
+    let canvas = document.getElementById("hiitemiyou-canvas");
+    let footer = document.querySelectorAll("#hiitemiyou .footer")[0];
+
+    let width;
+    let height;
+
+    if(fullScreenOnOffBtn.value == "FullScreen On") {
+        width = getMaxWidth();
+        height = getMaxHeight();
+    } else {
+        width = DEFAULT_WIDTH;
+        height = DEFAULT_HEIGHT;
+    }
+
+    let halfOfWidth = parseInt(width / 2);
+    let youtubeHeight = parseInt(halfOfWidth * 3 / 4);
+    let titleHeight = parseInt((height - youtubeHeight) / 2);
+    
+    main.style.width = width + "px";
+    main.style.height = height + "px";
+
+    title.style.width = halfOfWidth + "px";
+    title.style.height = titleHeight + "px";
+
+    explain.style.width = halfOfWidth + "px";
+    explain.style.height = titleHeight + "px";
+
+    canvas.style.width = halfOfWidth + "px";
+    canvas.style.height = height + "px";
+
+    player.setSize(halfOfWidth, youtubeHeight);
+
+    footer.style.width = width;
+
+    if(fullScreenOnOffBtn.value == "FullScreen On") {
+        fullScreenOnOffBtn.value = "FullScreen Off";
+        document.documentElement.style.setProperty("scrollbar-width", "none");
+    } else {
+        fullScreenOnOffBtn.value = "FullScreen On";
+        document.documentElement.style.setProperty("scrollbar-width", "auto");
+        document.exitFullscreen();
+    }
+}
+
+function getMaxWidth() {
+    windowWidth = window.innerWidth - 16;
+    windowHeight = window.innerHeight - 24 - 16;
+    if(windowWidth/windowHeight >= DEFAULT_WIDTH/DEFAULT_HEIGHT) {
+        return windowHeight / DEFAULT_HEIGHT * DEFAULT_WIDTH;
+    } else {
+        return windowWidth;
+    }
+}
+
+function getMaxHeight() {
+    windowWidth = window.innerWidth - 16;
+    windowHeight = window.innerHeight - 24 - 16;
+    if(windowWidth/windowHeight >= DEFAULT_WIDTH/DEFAULT_HEIGHT) {
+        return windowHeight;
+    } else {
+        return windowWidth / DEFAULT_WIDTH * DEFAULT_HEIGHT;
+    }
+}
+
 
 function initializeFileButton() {
     console.log("on script");
@@ -281,6 +368,17 @@ function onYouTubeIframeAPIReady() {
         autoplay: 0  //自動再生する
         },
     });
+}
+
+/**
+ * キャンバス描画のループ
+ */
+function renderLoop() {
+    try {
+        drawCanvas();
+    } finally {
+        requestAnimationFrame(renderLoop);
+    }
 }
 
 /**
@@ -434,12 +532,13 @@ function drawNote(ctx, note) {
 function chordName(ctx, leftTopY, chordName) {
     ctx.fillStyle = "rgba(255, 255, 255, 1)";
     ctx.strokeStyle = "rgba(0, 0, 0, 1)";
+    ctx.lineWidth = 3;
     ctx.font = "bold " + CHORD_NAME_HEIGHT + "px sans-serif";
     let text = ctx.measureText(chordName);
     let textX = CANVAS_WIDTH - text.width - FRET_MARGIN_Y;
     let textY = leftTopY + FRET_HEIGHT / 2 + CHORD_NAME_HEIGHT / 2;
-    ctx.fillText(chordName, textX, textY);
     ctx.strokeText(chordName, textX, textY);
+    ctx.fillText(chordName, textX, textY);
 }
 
 /**
@@ -552,8 +651,8 @@ function drawFps() {
  * 定期的な表示の呼び出しと書き出し
  */
 window.onload = function onLoad() {
-    // 16ミリ秒（60FPSの1フレーム）ごとにdrawCanvasを実行
-    let intervalID = setInterval(drawCanvas, 16);
+    // drawCanvasをぶん回す
+    renderLoop();
     // 2000ミリ秒ごとにdrawFpsを実行してFPSを表示する
     let intervalID2 = setInterval(drawFps, FRAME_PERIOD * 1000);
     // 初期化
