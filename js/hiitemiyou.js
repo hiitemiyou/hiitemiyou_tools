@@ -185,16 +185,16 @@ function initialize(){
 
     topTag.innerHTML = [
         `<div class="main" style="width:${specifiedHalfOfWidth};height:${specifiedHeight}">`,
-        `    <canvas id="hiitemiyou-canvas" width="${DEFAULT_HALF_OF_WIDTH}px" height="${DEFAULT_HEIGHT}px" style="width:${specifiedHalfOfWidth};height:${specifiedHeight}"></canvas>`,
+        `    <canvas width="${DEFAULT_HALF_OF_WIDTH}px" height="${DEFAULT_HEIGHT}px" style="width:${specifiedHalfOfWidth}px;height:${specifiedHeight}px"></canvas>`,
         '    <div class="right-side" width="50%" height="100%">',
         `        <div class="title" style="width:${specifiedHalfOfWidth}px;height:${specifiedTitleHeight}px"></div>`,
         `        <div id="player" width="${specifiedHalfOfWidth}px" height="${specifiedYoutubeHeight}px"></div>`,
-        `        <div id="explain" class="explain" style="width:${specifiedHalfOfWidth}px;height:${specifiedTitleHeight}px;font-size:${specifiedFontSize}"></div>`,
+        `        <div id="explain" class="explain" style="width:${specifiedHalfOfWidth}px;height:${specifiedTitleHeight}px;font-size:${specifiedFontSize}px"></div>`,
         '    </div>',
         '</div>',
-        `<div class="footer" style="width:${specifiedWidth};${specifiedFooterDisplay}">`,
-        '    <input type="button" id="fullScreenOnOff" class="fullScreenOnOff" value="🗖" title="FullScreen On" onclick="fullScreenOnOff()"/>',
-        '    <button id="hiitemiyou-file-btn" onclick="document.getElementById(\'hiitemiyou-file\').click();" title="json file">🗋</button>',
+        `<div class="footer" style="width:${specifiedWidth}px;${specifiedFooterDisplay}">`,
+        '    <input type="button" id="fullScreenOnOff" class="fullScreenOnOff" value="▢" title="FullScreen On" onclick="fullScreenOnOff()"/>',
+        '    <button id="hiitemiyou-file-btn" onclick="document.getElementById(\'hiitemiyou-file\').click();" title="json file">📄</button>',
         '    <input type="file" id="hiitemiyou-file" accept="application/json" style="display:none"/>',
         '    <div id="counter" class="counter"></div>',
         '    <div id="fps" class="fps" style="white-space: nowrap"></div>',
@@ -245,7 +245,7 @@ function setResizeAtSpecifiedSize() {
     let main = document.querySelectorAll("#hiitemiyou .main")[0];
     let title = document.querySelectorAll("#hiitemiyou .main .title")[0];
     let explain = document.querySelectorAll("#hiitemiyou .main .explain")[0];
-    let canvas = document.getElementById("hiitemiyou-canvas");
+    let canvas = document.querySelectorAll("#hiitemiyou canvas")[0];
     let footer = document.querySelectorAll("#hiitemiyou .footer")[0];
 
     let halfOfWidth = parseInt(specifiedWidth / 2);
@@ -300,7 +300,7 @@ function setResizeAtFullScreenOnOff() {
     let main = document.querySelectorAll("#hiitemiyou .main")[0];
     let title = document.querySelectorAll("#hiitemiyou .main .title")[0];
     let explain = document.querySelectorAll("#hiitemiyou .main .explain")[0];
-    let canvas = document.getElementById("hiitemiyou-canvas");
+    let canvas = document.querySelectorAll("#hiitemiyou canvas")[0];
     let footer = document.querySelectorAll("#hiitemiyou .footer")[0];
 
     let width;
@@ -338,11 +338,11 @@ function setResizeAtFullScreenOnOff() {
     footer.style.width = width;
 
     if(fullScreenOnOffBtn.title == "FullScreen On") {
-        fullScreenOnOffBtn.value = "🗗";
+        fullScreenOnOffBtn.value = "▣";
         fullScreenOnOffBtn.title = "FullScreen Off";
         document.documentElement.style.setProperty("scrollbar-width", "none");
     } else {
-        fullScreenOnOffBtn.value = "🗖";
+        fullScreenOnOffBtn.value = "▢";
         fullScreenOnOffBtn.title = "FullScreen On";
         document.documentElement.style.setProperty("scrollbar-width", "auto");
         document.exitFullscreen();
@@ -562,7 +562,7 @@ function drawCanvas() {
     }
     target.innerHTML = Number.parseFloat(second).toFixed(3);
 
-    const canvas = document.querySelector("canvas");
+    const canvas = document.querySelectorAll("#hiitemiyou canvas")[0];
     const ctx = canvas.getContext("2d");
 
     // キャンバスのクリア
