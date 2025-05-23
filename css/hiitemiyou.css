@@ -1,14 +1,10 @@
 #hiitemiyou .main {
-    width: 896px;
-    height: 504px;
     display: flex;
     border-color: black;
     border: 1px solid;
 }
 
 #hiitemiyou .main .right-side .title {
-    width: 448px;
-    height: 84px;
     background-image: url("../image/title.png");
     background-repeat:no-repeat;
     background-position:50%;
@@ -16,8 +12,6 @@
 }
 
 #hiitemiyou .main .right-side .explain {
-    width: 448px;
-    height: 84px;
     text-align: center;
 }
 
@@ -27,10 +21,11 @@
 }
 
 #hiitemiyou .footer .counter {
-    width: 50%;
+    width: 70%;
+    text-align: right;
 }
 
 #hiitemiyou .footer .fps {
-    width: 50%;
+    width: 20%;
     text-align: right;
 }

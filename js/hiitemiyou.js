@@ -1,10 +1,25 @@
 // DEFAULT
-var DEFAULT_WIDTH = 896;
-var DEFAULT_HEIGHT = 504;
+const DEFAULT_WIDTH = 896;
+const DEFAULT_HALF_OF_WIDTH = DEFAULT_WIDTH / 2;
+const DEFAULT_HEIGHT = 504;
+const DEFAULT_FONT_SIZE = 16;
+const DEFAULT_VIDEO_WIDTH = DEFAULT_HALF_OF_WIDTH;
+const DEFAULT_VIDEO_HEIGHT = 336;
+const DEFAULT_CONTROL = "normal";
+
+// SPECIFIED
+var specifiedWidth = DEFAULT_WIDTH;
+var specifiedHeight = DEFAULT_HEIGHT;
+var specifiedHalfOfWidth = parseInt(specifiedWidth / 2);
+var specifiedYoutubeHeight = parseInt(specifiedHalfOfWidth * 3 / 4);
+var specifiedTitleHeight = parseInt((specifiedHeight - specifiedYoutubeHeight) / 2);
+var specifiedFontSize = 16;
+var specifiedControl = DEFAULT_CONTROL;
+var specifiedFooterDisplay = "";
 
 // for YouTubeAPI
-var videoWidth  = '448';  //動画横サイズ
-var videoHeight = '336';  //動画縦サイズ
+var videoWidth  = DEFAULT_VIDEO_WIDTH;  //動画横サイズ
+var videoHeight = DEFAULT_VIDEO_HEIGHT;  //動画縦サイズ
 var player;
 var videoSetFlag = false;
 
@@ -15,14 +30,14 @@ const CANVAS_HEIGHT = 504;
 // for FRET BORAD
 const FRET_LEFT_MARGIN_X = 40;
 const FRET_RIGHT_MARGIN_X = 10;
-var FRET_WIDTH = CANVAS_WIDTH - (FRET_LEFT_MARGIN_X + FRET_RIGHT_MARGIN_X); // 428
+const FRET_WIDTH = CANVAS_WIDTH - (FRET_LEFT_MARGIN_X + FRET_RIGHT_MARGIN_X);
 const FRET_MARGIN_Y = 10;
 const FRET_HEIGHT = 100;
 
 // for TIMING
 const TIMING_WIDTH = 15;
 const TIMING_HEIGHT = 5;
-var TIMING_BOTTOM_Y = FRET_HEIGHT + FRET_MARGIN_Y;
+const TIMING_BOTTOM_Y = FRET_HEIGHT + FRET_MARGIN_Y;
 
 // for MUTE
 const MUTE_WIDTH = 10;
@@ -46,6 +61,11 @@ var music;
 // for numOfString
 const DEFAULT_NUM_OF_STRING = 6;
 
+/**
+ * Null/undefinedだったらtrue
+ * @param {*} value 値
+ * @returns true/false
+ */
 function isNull(value) {
     if(value === null || value === undefined) {
         return true;
@@ -155,24 +175,35 @@ class Note {
 
 function initialize(){
     topTag = document.getElementById("hiitemiyou");
-    topTag.innerHTML = `
-<div class="main">
-    <canvas id="hiitemiyou-canvas" width="448px" height="504px"></canvas>
-    <div class="right-side" width="50%" height="100%">
-        <div class="title"></div>
-        <div id="player" width="448px" height="504px"></div>
-        <div id="explain" class="explain"></div>
-    </div>
-</div>
-<div class="footer">
-    <input type="button" id="fullScreenOnOff" class="fullScreenOnOff" value="FullScreen On" onclick="fullScreenOnOff()">
-    <input type="file" id="hiitemiyou-file" accept="application/json"/>
-    <div id="counter" class="counter"></div>
-    <div id="fps" class="fps"></div>
-</div>
-    `;
+    // 属性に指定された値をとる
+    specifiedWidth = topTag.getAttribute("width") ?  topTag.getAttribute("width") : DEFAULT_WIDTH;
+    specifiedHeight = topTag.getAttribute("height") ? topTag.getAttribute("height")  : DEFAULT_HEIGHT;
+    specifiedControl = topTag.getAttribute("control") ? topTag.getAttribute("control")  : DEFAULT_CONTROL;
+
+    getSpecicicatedSize();
+    getControl();
+
+    topTag.innerHTML = [
+        `<div class="main" style="width:${specifiedHalfOfWidth};height:${specifiedHeight}">`,
+        `    <canvas id="hiitemiyou-canvas" width="${DEFAULT_HALF_OF_WIDTH}px" height="${DEFAULT_HEIGHT}px" style="width:${specifiedHalfOfWidth};height:${specifiedHeight}"></canvas>`,
+        '    <div class="right-side" width="50%" height="100%">',
+        `        <div class="title" style="width:${specifiedHalfOfWidth}px;height:${specifiedTitleHeight}px"></div>`,
+        `        <div id="player" width="${specifiedHalfOfWidth}px" height="${specifiedYoutubeHeight}px"></div>`,
+        `        <div id="explain" class="explain" style="width:${specifiedHalfOfWidth}px;height:${specifiedTitleHeight}px;font-size:${specifiedFontSize}"></div>`,
+        '    </div>',
+        '</div>',
+        `<div class="footer" style="width:${specifiedWidth};${specifiedFooterDisplay}">`,
+        '    <input type="button" id="fullScreenOnOff" class="fullScreenOnOff" value="🗖" title="FullScreen On" onclick="fullScreenOnOff()"/>',
+        '    <button id="hiitemiyou-file-btn" onclick="document.getElementById(\'hiitemiyou-file\').click();" title="json file">🗋</button>',
+        '    <input type="file" id="hiitemiyou-file" accept="application/json" style="display:none"/>',
+        '    <div id="counter" class="counter"></div>',
+        '    <div id="fps" class="fps" style="white-space: nowrap"></div>',
+        '</div>',
+    ].join('\n');
+
     // ファイルロードボタンの初期設定
     initializeFileButton();
+
     // ロードのキック
     console.log("location.href=" + location.href);
     // ローカルファイルの読み込み
@@ -181,18 +212,89 @@ function initialize(){
     load(dataText);
 }
 
-function fullScreenOnOff() {
-    let fullScreenOnOffBtn = document.getElementById("fullScreenOnOff");
-    let promise;
-    if(fullScreenOnOffBtn.value == "FullScreen On") {
-        promise = document.documentElement.requestFullscreen();
-        promise.then(setResizeAtFullScreenOnOff, setResizeAtFullScreenOnOff);
-    } else {
-        promise = document.exitFullscreen();
-        promise.then(setResizeAtFullScreenOnOff, setResizeAtFullScreenOnOff);
+/**
+ * 指定のサイズ取得
+ */
+function getSpecicicatedSize() {
+    let width = specifiedWidth;
+    let height = specifiedHeight;
+
+    specifiedWidth = getSpecifiedWidth(width, height);
+    specifiedHeight = getSpecifiedHeight(width, height);
+    
+    specifiedHalfOfWidth = parseInt(specifiedWidth / 2);
+    specifiedYoutubeHeight = parseInt(specifiedHalfOfWidth * 3 / 4);
+    specifiedTitleHeight = parseInt((specifiedHeight - specifiedYoutubeHeight) / 2);
+
+    specifiedFontSize = parseInt((DEFAULT_FONT_SIZE * specifiedWidth / DEFAULT_WIDTH)) ? parseInt((DEFAULT_FONT_SIZE * specifiedWidth / DEFAULT_WIDTH)) : 1;
+}
+
+/**
+ * 指定のコントロールパネル
+ */
+function getControl() {
+    if(specifiedControl == "none") {
+        specifiedFooterDisplay = "display:none";
     }
 }
 
+/**
+ * 指定のサイズ設定
+ */
+function setResizeAtSpecifiedSize() {
+    let main = document.querySelectorAll("#hiitemiyou .main")[0];
+    let title = document.querySelectorAll("#hiitemiyou .main .title")[0];
+    let explain = document.querySelectorAll("#hiitemiyou .main .explain")[0];
+    let canvas = document.getElementById("hiitemiyou-canvas");
+    let footer = document.querySelectorAll("#hiitemiyou .footer")[0];
+
+    let halfOfWidth = parseInt(specifiedWidth / 2);
+    let youtubeHeight = parseInt(halfOfWidth * 3 / 4);
+    let titleHeight = parseInt((specifiedHeight - youtubeHeight) / 2);
+    
+    main.style.width = specifiedWidth + "px";
+    main.style.height = specifiedHeight + "px";
+
+    title.style.width = halfOfWidth + "px";
+    title.style.height = titleHeight + "px";
+
+    explain.style.width = halfOfWidth + "px";
+    explain.style.height = titleHeight + "px";
+
+    canvas.style.width = halfOfWidth + "px";
+    canvas.style.height = specifiedHeight + "px";
+
+    player.setSize(halfOfWidth, youtubeHeight);
+
+    footer.style.width = specifiedWidth + "px";
+}
+
+/**
+ * フルスクリーンのON/OFF
+ */
+function fullScreenOnOff() {
+    let fullScreenOnOffBtn = document.getElementById("fullScreenOnOff");
+    let promise;
+    if(fullScreenOnOffBtn.title == "FullScreen On") {
+        try {
+            promise = document.documentElement.requestFullscreen();
+            promise.then(setResizeAtFullScreenOnOff, setResizeAtFullScreenOnOff);
+        } catch(e) {
+            setResizeAtFullScreenOnOff();
+        }
+    } else {
+        try {
+            promise = document.exitFullscreen();
+            promise.then(setResizeAtFullScreenOnOff, setResizeAtFullScreenOnOff);
+        } catch(e) {
+            setResizeAtFullScreenOnOff();
+        }
+    }
+}
+
+/**
+ * フルスクリーンON/OFF時のサイズ設定
+ */
 function setResizeAtFullScreenOnOff() {
     let fullScreenOnOffBtn = document.getElementById("fullScreenOnOff");
     let main = document.querySelectorAll("#hiitemiyou .main")[0];
@@ -204,18 +306,20 @@ function setResizeAtFullScreenOnOff() {
     let width;
     let height;
 
-    if(fullScreenOnOffBtn.value == "FullScreen On") {
+    if(fullScreenOnOffBtn.title == "FullScreen On") {
         width = getMaxWidth();
         height = getMaxHeight();
     } else {
-        width = DEFAULT_WIDTH;
-        height = DEFAULT_HEIGHT;
+        width = specifiedWidth;
+        height = specifiedHeight;
     }
 
     let halfOfWidth = parseInt(width / 2);
     let youtubeHeight = parseInt(halfOfWidth * 3 / 4);
     let titleHeight = parseInt((height - youtubeHeight) / 2);
-    
+
+    let fontSize = parseInt((DEFAULT_FONT_SIZE * width / DEFAULT_WIDTH)) ? parseInt((DEFAULT_FONT_SIZE * width / DEFAULT_WIDTH)) : 1;
+   
     main.style.width = width + "px";
     main.style.height = height + "px";
 
@@ -224,6 +328,7 @@ function setResizeAtFullScreenOnOff() {
 
     explain.style.width = halfOfWidth + "px";
     explain.style.height = titleHeight + "px";
+    explain.style.fontSize = fontSize + "px";
 
     canvas.style.width = halfOfWidth + "px";
     canvas.style.height = height + "px";
@@ -232,16 +337,22 @@ function setResizeAtFullScreenOnOff() {
 
     footer.style.width = width;
 
-    if(fullScreenOnOffBtn.value == "FullScreen On") {
-        fullScreenOnOffBtn.value = "FullScreen Off";
+    if(fullScreenOnOffBtn.title == "FullScreen On") {
+        fullScreenOnOffBtn.value = "🗗";
+        fullScreenOnOffBtn.title = "FullScreen Off";
         document.documentElement.style.setProperty("scrollbar-width", "none");
     } else {
-        fullScreenOnOffBtn.value = "FullScreen On";
+        fullScreenOnOffBtn.value = "🗖";
+        fullScreenOnOffBtn.title = "FullScreen On";
         document.documentElement.style.setProperty("scrollbar-width", "auto");
         document.exitFullscreen();
     }
 }
 
+/**
+ * 縦横比を保ったままの最大幅
+ * @returns 縦横比を保ったままの最大幅
+ */
 function getMaxWidth() {
     windowWidth = window.innerWidth - 16;
     windowHeight = window.innerHeight - 24 - 16;
@@ -252,6 +363,10 @@ function getMaxWidth() {
     }
 }
 
+/**
+ * 縦横比を保ったままの最大高
+ * @returns 縦横比を保ったままの最大高
+ */
 function getMaxHeight() {
     windowWidth = window.innerWidth - 16;
     windowHeight = window.innerHeight - 24 - 16;
@@ -262,7 +377,41 @@ function getMaxHeight() {
     }
 }
 
+/**
+ * 縦横比を保ったままの幅
+ * @param {*} width 指定された幅
+ * @param {*} height 指定された高さ
+ * @returns 縦横比を保ったままの幅
+ */
+function getSpecifiedWidth(width, height) {
+    tmpWidth = width;
+    tmpHeight = height;
+    if(tmpWidth / tmpHeight >= DEFAULT_WIDTH / DEFAULT_HEIGHT) {
+        return tmpHeight / DEFAULT_HEIGHT * DEFAULT_WIDTH;
+    } else {
+        return tmpWidth;
+    }
+}
 
+/**
+ * 縦横比を保ったままの高さ
+ * @param {*} width 指定された幅
+ * @param {*} height 指定された高さ
+ * @returns 縦横比を保ったままの高さ
+ */
+function getSpecifiedHeight(width, height) {
+    tmpWidth = width;
+    tmpHeight = height;
+    if(tmpWidth / tmpHeight >= DEFAULT_WIDTH / DEFAULT_HEIGHT) {
+        return tmpHeight;
+    } else {
+        return tmpWidth / DEFAULT_WIDTH * DEFAULT_HEIGHT;
+    }
+}
+
+/**
+ * ファイルボタンの初期設定
+ */
 function initializeFileButton() {
     console.log("on script");
     var inputFile = document.getElementById("hiitemiyou-file");
@@ -279,7 +428,9 @@ function initializeFileButton() {
     }, false);
 }
 
-// テキストエリアのJSONデータを再読み込みして画面に適用する
+/**
+ * テキストエリアのJSONデータを再読み込みして画面に適用する
+ */
 function reload() {
     // テキストエリアの内容を取得する
     let dataText = document.getElementById("hiitemiyou-data").value;
@@ -290,13 +441,20 @@ function reload() {
     player.cueVideoById({videoId: music.youtubeId});
 }
 
-// テキストエリアにjsonデータを取り込む
+/**
+ * テキストエリアにjsonデータを取り込む
+ */
 function readFile() {
     // テキストエリアの内容を取得する
     document.getElementById("hiitemiyou-data").value = "";
     // リロード
     reload();
 }
+
+/**
+ * ロード
+ * @param dataText データ(テキスト)
+ */
 function load(dataText) {
     // ロード時
     let musicData
@@ -361,8 +519,8 @@ function load(dataText) {
  */ 
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
-        height: videoHeight,
-        width: videoWidth,
+        height: specifiedYoutubeHeight,
+        width: specifiedHalfOfWidth,
         videoId: music.youtubeId,
         playerVars: {
         autoplay: 0  //自動再生する
@@ -638,6 +796,7 @@ function drawPositionMark(ctx, numOfFret) {
 function fretPosition(numOfFret) {
     return (FRET_WIDTH * 4 / 3) - Math.pow(2 , ((12 - numOfFret) / 12)) * (FRET_WIDTH * 4 / 3) / 2;
 }
+
 /**
  * FPSの表示
  */
